@@ -1,0 +1,1 @@
+./bootloader -d /dev/ttyUSB0 -b 38400 -a 1000 -p MRAC_Fan_Controller.hex
