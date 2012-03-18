@@ -14,7 +14,8 @@
 #include <math.h>
 #include "MRAC.h"
 
-int uh=24;
+//int uh=24;
+int uh=127;
 int ul=-70;
 
 double MRAC(int Ts, int Td, double Tm, int Fan_Bank)
