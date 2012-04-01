@@ -15,13 +15,13 @@
 /*********************************************
 * CPU Frequencies
 ********************************************/
-#define F_CPU 8000000		           /* oscillator-frequency in Hz */
+#define F_CPU 4000000		           /* oscillator-frequency in Hz */
 #include <util/delay.h>
 
 /*********************************************
 * USART Definitions
 *********************************************/
-#define UART_BAUD_RATE 38400
+#define UART_BAUD_RATE 19200
 #define UART_BAUD_CALC(UART_BAUD_RATE,F_CPU) ((F_CPU)/((UART_BAUD_RATE)*16l)-1)
 
 /*********************************************
@@ -34,7 +34,7 @@
 *********************************************/
 char 		usart_array[100];
 volatile int 	wi=0;
-volatile int 	handshake=0;
+volatile uint16_t 	handshake=0;
 /*********************************************
 * MRAC Controller Global Variables
 *********************************************/
@@ -71,7 +71,8 @@ void InitPWM(void)
         // PWM Init F1
 
 	DDRB  |= _BV(PB4); //OCR0 pin as output
-        TCCR0 |= _BV(WGM01) | _BV(WGM00); //mode 1, Fast PWM
+        TCCR0 |= _BV(WGM01) | _BV(WGM00); //mode 3, Fast PWM
+        //TCCR0 |= _BV(WGM00); //mode 1, Phase Correct PWM
         TCCR0 |= _BV(COM01); //Clear OCR0 on compare match, set OC00 at BOTTOM
         TCCR0 |= _BV(CS00); //prescaler divider 1
 
@@ -208,7 +209,7 @@ ISR(USART1_RX_vect)
 		memset(usart_array, 0, 100);
                 usart_array[0]='\0';
                 wi=0;
-		handshake++;
+		//handshake++;
 		/*
 		cli();
 		wdt_reset();
@@ -224,6 +225,7 @@ ISR(USART1_RX_vect)
 }
 
 
+
 /*********************************************
 * The main Loop
 *********************************************/
@@ -235,7 +237,6 @@ void main(void) {
 
 	init();
 	InitPWM();
-	wdt_enable(WDTO_2S);
 
 	OCR0 =128;
 	OCR1A=128;
@@ -243,7 +244,7 @@ void main(void) {
 	OCR1C=128;
 
 
-	_delay_ms(300);
+	//delay_1s();
 
 	uart_puts("MCU online\r\n");
 
@@ -276,16 +277,22 @@ void main(void) {
 
 	sei(); // enable interrupts
 
+	wdt_enable(WDTO_2S);
+
+
 	for(;;)
         {
 
-	_delay_ms(1000);
+	//_delay_us(1);
+	//wdt_reset(); // Reset the watchdog
+
+	delay_1000();
 	handshake++;
 
-		if (handshake < 60)
+		if (handshake < 20)
 		{
-
 			wdt_reset(); // Reset the watchdog
+			//uart_puts("Safe\r\n");
 		}
 		else
 		{
@@ -295,4 +302,11 @@ void main(void) {
 
         }
 
+}
+
+void delay_1000(void)
+{
+   uint8_t i;
+   for (i = 0; i < 100; i++)
+      _delay_ms(10);
 }

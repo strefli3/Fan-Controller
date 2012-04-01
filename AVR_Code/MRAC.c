@@ -61,6 +61,7 @@ double MRAC(int Ts, int Td, double Tm, int Fan_Bank)
 		//u=24; // Lets not let the controller turn the fans off..
 	}
 
+
 	switch(Fan_Bank)
 		{
 		case 1:

@@ -1,0 +1,9 @@
+Set the fuses:
+avrdude -p atmega128 -P /dev/ttyACM0 -c stk500 -U lfuse:w:0xa4:m -U hfuse:w:0x9e:m -U efuse:w:0xfe:m
+
+Write the bootloader:
+avrdude -p atmega128 -P /dev/ttyACM0 -c stk500 -U Bootloader.hex
+
+Loading the program:
+
+./bootloader_32 -p MRAC_Fan_Controller.hex -d /dev/ttyUSB0 -b 38400

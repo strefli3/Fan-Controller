@@ -1,0 +1,15 @@
+\contentsline {section}{\numberline {0.1}Introduction}{1}
+\contentsline {section}{\numberline {0.2}Obtaining the Code}{1}
+\contentsline {subsection}{\numberline {0.2.1}What is contained in the Repository}{1}
+\contentsline {section}{\numberline {0.3}Tailoring the Daemon to your Configuration}{2}
+\contentsline {subsection}{\numberline {0.3.1}Hard Drive Locations}{2}
+\contentsline {subsection}{\numberline {0.3.2}Obtaining Hard Drive Temperatures}{2}
+\contentsline {subsection}{\numberline {0.3.3}Assembling the Temperatures into an Array}{3}
+\contentsline {subsection}{\numberline {0.3.4}Setting Up Email}{3}
+\contentsline {section}{\numberline {0.4}Initial Testing}{3}
+\contentsline {subsection}{\numberline {0.4.1}Testing with micro USB}{3}
+\contentsline {subsubsection}{\numberline {0.4.1.1}Testing your Configuration}{4}
+\contentsline {section}{\numberline {0.5}Hardware Installation}{4}
+\contentsline {section}{\numberline {0.6}Testing that hardware configuration}{5}
+\contentsline {section}{\numberline {0.7}Final Installation}{5}
+\contentsline {subsection}{\numberline {0.7.1}Installing the software as a cron job}{5}
