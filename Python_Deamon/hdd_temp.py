@@ -47,8 +47,52 @@ class hdd_temp:
 
 			#Lets add some cross talk to see what happens...
 
-			#self.Temps[0][0]=int(min(temp))
-			#self.Temps[3][0]=int(min(temp))
+                        # Fan Bank 0
+                        FBA=[0,0,0,0]
+                        print self.Temps
+                        try:
+                                FBA[0]=min([x for x in self.Temps[1] if x !=0])
+                        except:
+                                FBA[0]=0
+
+                        # Fan Bank 1 and 2
+
+                        try:
+                                FBA[1]=min([x for x in sum([self.Temps[0],self.Temps[2]],[]) if x != 0])
+                        except:
+                                FBA[1]=0
+
+                        try:
+                                FBA[2]=min([x for x in sum([self.Temps[1],self.Temps[3]],[]) if x != 0])
+                        except:
+                                FBA[2]=0
+
+			 # Fan Bank 3
+                        try:
+                                FBA[3]=min([x for x in self.Temps[2] if x !=0])
+                        except:
+                                FBA[3]=0
+
+                        print FBA
+
+                        #if self.Temps[0][0] > FBA[0] or self.Temps[0][0] == 0:
+                        #       self.Temps[0][0] = FBA[0]
+                        #if self.Temps[1][0] > FBA[1] or self.Temps[1][0] == 0:
+                        #       self.Temps[1][0] = FBA[1]
+                        #if self.Temps[2][0] > FBA[2] or self.Temps[2][0] == 0:
+                        #       self.Temps[2][0] = FBA[2]
+                        #if self.Temps[3][0] > FBA[3] or self.Temps[3][0] == 0:
+                        #       self.Temps[3][0] = FBA[3]
+
+                        if self.Temps[0][0] < FBA[0]:
+                                self.Temps[0][0] = FBA[0]
+                        if self.Temps[1][0] < FBA[1]:
+                                self.Temps[1][0] = FBA[1]
+                        if self.Temps[2][0] < FBA[2]:
+                                self.Temps[2][0] = FBA[2]
+                        if self.Temps[3][0] < FBA[3]:
+                                self.Temps[3][0] = FBA[3]
+
 
 		else:
 			self.Temps=0

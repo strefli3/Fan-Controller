@@ -48,6 +48,11 @@ while i:
 
 	try:
 
+		now = datetime.datetime.now()
+
+		print str(now)
+
+
 		rx = x.readlines()  #or x.read() for one byte
 		if rx:
  			print rx
