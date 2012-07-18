@@ -19,8 +19,8 @@ if [ -f $file ];
 				echo "Looks like Python crashed, restarting..."
 				py_pid=$(ps -Alf | grep HDD_Temp_Push.py | grep python |awk '{print $4}')
 				kill -9 $py_pid
-				#python /home/strefli3/Fan-Controller/Python_Deamon/HDD_Temp_Push.py &
-				python /home/strefli3/Fan-Controller/Python_Deamon/HDD_Temp_Push.py > /tmp/MRAC_"$Current_time".log &
+				#python /home/strefli3/Fan-Controller/Python_Daemon/HDD_Temp_Push.py &
+				python /home/strefli3/Fan-Controller/Python_Daemon/HDD_Temp_Push.py > /tmp/MRAC_"$Current_time".log &
 				echo "The Cron job has found a problem with python. I've restarted it,  but you should check the log. The file delta was $delta." | mail -s "[FBOX] USART Failure on FC!" strefli3@gmail.com
 			else
 				echo "Python looks stable"
@@ -29,8 +29,8 @@ if [ -f $file ];
 		echo "File does not exist... Starting python..."
 		py_pid=$(ps -Alf | grep HDD_Temp_Push.py | grep python |awk '{print $4}')
 		kill -9 $py_pid
-		#python /home/strefli3/Fan-Controller/Python_Deamon/HDD_Temp_Push.py &
-		python /home/strefli3/Fan-Controller/Python_Deamon/HDD_Temp_Push.py > /tmp/MRAC_"$Current_time".log &
+		#python /home/strefli3/Fan-Controller/Python_Daemon/HDD_Temp_Push.py &
+		python /home/strefli3/Fan-Controller/Python_Daemon/HDD_Temp_Push.py > /tmp/MRAC_"$Current_time".log &
 		echo "The Cron job has found a problem with python. I've restarted it,  but you should check the log. The duty file was missing!" | mail -s "[FBOX] USART Failure on FC!" strefli3@gmail.com
 
 fi

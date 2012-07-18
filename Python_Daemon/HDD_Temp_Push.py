@@ -26,7 +26,7 @@ def init_ser():
 
 	S=0
 	try:
-	        x = serial.Serial('/dev/ttyUSB0',38400,timeout=.1)
+	        x = serial.Serial('/dev/ttyUSB0',19200,timeout=.1)
 		x.flushInput()
 	except:
 	        print "USB0 Failed... Trying USB1\n"
@@ -34,7 +34,7 @@ def init_ser():
 	
 	if S==1:
 	        try:
-	                x = serial.Serial('/dev/ttyUSB1',38400,timeout=.1)
+	                x = serial.Serial('/dev/ttyUSB1',19200,timeout=.1)
 			x.flushInput()
 	        except:
 	                print "USB1 Failed... Disabaling Serial Output\n"
