@@ -1,0 +1,283 @@
+\documentclass[10pt,letterpaper]{report}
+\usepackage[latin1]{inputenc}
+\usepackage[margin=0.75in]{geometry}
+
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+
+\author{Paul Strefling}
+
+\title{ Model Reference Adaptive Control - Compute Server Fan Control}
+
+\begin{document}
+\maketitle
+
+\setcounter{secnumdepth}{5}
+\setcounter{tocdepth}{5}
+
+\tableofcontents
+
+\section{Introduction}
+
+It has been found that hard drive failure rates are a function of many parameters. However their operating temperature plays a significant role in their lifetime. A study by Google incorporated included a disk drive population exceeding 100,000 disks over the period of 9 months. Their results found that hard drives operating between 30 and 40 degrees had an annual failure rate less than half that of temperatures above 45 degrees Celsius or below 30 degrees Celsius.
+
+The motivation behind this project is to develop a fan controller to regulate hard drive temperatures regardless of manufacturer, utilization, installation, ambient temperature or fan specifications. Specifically this controller has the ability to regulate the temperatures of a Redundant Array of Independent Disks (RAID) regardless of the number of disks installed.
+
+\section{Obtaining the Code}
+
+The code for this project is hosted using the services provided by github.com. To obtain the source code, execute the following command on your machine
+
+\begin{verbatim}
+git clone git://github.com/strefli3/Fan-Controller.git
+\end{verbatim}
+
+
+\subsection{What is contained in the Repository}
+
+There are several directories in this repository that contain code and documentation for this particular project. Here is a brief overview of the structure:
+
+\begin{enumerate}
+\item \textbf{AVR\_Code} \\
+
+Code that is executed on the AVR Atmega128A microcontroller. The control logic or Model Reference Adaptive Control strategy is captured in this code.
+
+\item \textbf{Bootloader}\\
+
+A bootloader is provided with this project such that the firmware on the microcontroller can be updated with out the need of an ICSP and thus can be performed remotely.
+
+\item \textbf{Python\_Daemon}\\
+
+This is the daemon which runs on the host system. It extracts hard drive temperatures, formats them into a readable string, and handles all the communications with the microcontroller.
+
+\item \textbf{Documentation}\\
+
+You would find this document, and documents like it in this directory.
+
+\end{enumerate}
+
+\section{Tailoring the Daemon to your Configuration}
+
+As previously mentioned the daemon extracts hard drive temperatures, formats them into a readable string, and handles all the communications with the microcontroller. 
+
+After obtaining the code from the git repository copy the daemon to an acceptable location on the host system, for example:
+%
+\begin{verbatim}
+mkdir /usr/local/MRAC
+cp -r ./Python_Daemon/* /usr/local/MRAC/
+\end{verbatim}
+%
+There is only a single file that needs to be edited to tailor this daemon to your system. This file, hdd\_temp.py obtains the hard drive temperatures, formats them into an array and returns said array.
+
+\subsection{Hard Drive Locations}
+
+The following discussion will follow the example of a typical Rackables Storage sever which contains 16 hard drives as shown in Table \ref{table:HDD}.
+%
+\begin{table}[htbp]
+\begin{center}
+\caption{\textsc{Typical Hard Drive Configuration}}
+\vspace{0.05in}
+\begin{tabular}{ |c|c|c|c| }
+  \hline
+  Fan Bank 1 & Fan Bank 2 & Fan Bank 3 & Fan Bank 4 \\
+  \hline
+   HDD 01 & HDD 05 & HDD 09 & HDD 13 \\
+  \hline
+   HDD 02 & HDD 06 & HDD 10 & HDD 14 \\
+  \hline
+   HDD 03 & HDD 07 & HDD 11 & HDD 15 \\
+  \hline
+   HDD 04 & HDD 08 & HDD 12 & HDD 16 \\
+  \hline
+\end{tabular}
+\label{table:HDD}
+\end{center}
+\end{table}
+%
+Hard drive Temperatures are stored in an array of the following format
+%
+\begin{verbatim}
+Temps[Fan_Bank][HDD]
+\end{verbatim}
+%
+For example, if $/dev/sda$ was in the position of $HDD \; 09$ then the following assignment would reflect this, taking into account that arrays start at $0$ not $1$:
+%
+\begin{verbatim}
+self.Temps[2][0]=int(TTable['/dev/sda'])
+\end{verbatim}
+
+\subsection{Obtaining Hard Drive Temperatures}
+
+Referring to hdd\_temp.py hard drive temperatures are obtained using the $GNU$ command $hddtemp$. Implemented inside Python, this command is executed as follows:
+\begin{verbatim}
+def hddget(self):
+
+		cmd='hddtemp /dev/sd[abcdefg]'	
+	        hddCMD=Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
+     		stdout, stderr = hddCMD.communicate()
+
+        	hdbuf=stdout+stderr
+	        return hdbuf
+\end{verbatim}
+For this particular example, the command was called with the argument of $7$ different hard drives, $a,b,c,d,e,f,g$. Change this command to reflect the amount of hard drives that you have configured.
+
+\subsection{Assembling the Temperatures into an Array}
+
+Again assuming that $7$ hard drives are installed, the following example will place them accordingly to their physical location. Notice that you need to adjust the argument in the $if statement$ to reflect the number of physical drives.
+
+\begin{verbatim}
+if len(TTable) == 7:
+ 
+        self.Temps[1][0]=int(TTable['/dev/sdd'])
+        self.Temps[1][1]=int(TTable['/dev/sde'])
+        self.Temps[1][2]=int(TTable['/dev/sdf'])
+        self.Temps[1][3]=int(TTable['/dev/sdg'])
+        	        
+        self.Temps[2][0]=int(TTable['/dev/sda'])
+        self.Temps[2][1]=int(TTable['/dev/sdb'])
+        self.Temps[2][2]=int(TTable['/dev/sdc'])
+
+        	        
+\end{verbatim}
+%
+It is not required to strictly follow the physical placement. For example, if $Fan 0$ and $Fan 1$ provided cooling for both $Bank 0$ and $Bank 1$, and the same for $Fan 2$ and $Fan 3$ then the following would be appropriate as well:
+%
+\begin{verbatim}
+if len(TTable) == 7:
+ 
+        self.Temps[0][0]=int(TTable['/dev/sdd'])
+        self.Temps[0][1]=int(TTable['/dev/sde'])
+        self.Temps[0][2]=int(TTable['/dev/sdf'])
+        self.Temps[0][3]=int(TTable['/dev/sdg'])
+
+        self.Temps[1][0]=int(TTable['/dev/sdd'])
+        self.Temps[1][1]=int(TTable['/dev/sde'])
+        self.Temps[1][2]=int(TTable['/dev/sdf'])
+        self.Temps[1][3]=int(TTable['/dev/sdg'])        	        
+                	        
+        self.Temps[2][0]=int(TTable['/dev/sda'])
+        self.Temps[2][1]=int(TTable['/dev/sdb'])
+        self.Temps[2][2]=int(TTable['/dev/sdc'])
+                	        
+        self.Temps[3][0]=int(TTable['/dev/sda'])
+        self.Temps[3][1]=int(TTable['/dev/sdb'])
+        self.Temps[3][2]=int(TTable['/dev/sdc'])
+        	        
+\end{verbatim}
+
+\subsection{Setting Up Email}
+
+Setup your email address in HDD\_Temp\_Push.py and be sure your system can send email to external addresses. Notifications of controller failure and communication problems will be sent directly to your inbox.
+
+\section{Initial Testing}
+
+
+\subsection{Testing with micro USB}
+
+Using a micro USB cable, attach the Fan Controller to your host machine. Ensure that the jumper just under the USB port is set to USB rather than HDD. It is shipped in this configuration.
+
+Once plugged in, execute $dmesg$ in a terminal, you should see something similar to this:
+%
+\begin{verbatim}
+ USB Serial support registered for FTDI USB Serial Device
+ ftdi_sio 6-1:1.0: FTDI USB Serial Device converter detected
+ usb 6-1: Detected FT232RL
+ usb 6-1: Number of endpoints 2
+ usb 6-1: Endpoint 1 MaxPacketSize 64
+ usb 6-1: Endpoint 2 MaxPacketSize 64
+ usb 6-1: Setting MaxPacketSize 64
+ usb 6-1: FTDI USB Serial Device converter now attached to ttyUSB0
+
+\end{verbatim}
+
+\subsubsection{Testing your Configuration}
+
+To test your configuration, open a terminal and execute the following:
+%
+\begin{verbatim}
+python HDD_Temp_Push.py
+\end{verbatim}
+%
+If hdd\_temp.py has been configured correctly, you can expect output similar to the following:
+%
+\begin{verbatim}
+python HDD_Temp_Push.py
+Opening Serial Port...
+Try
+00,00,00,00,37,41,41,41,40,41,40,00,00,00,00,00,36,36,36,36
+Fan_Bank 1: 0, Ts: 0, u: -128.00000, Tm: 30.00000
+
+Fan_Bank 2: 133, Ts: 41, u: 5.38787, Tm: 30.16549
+
+Fan_Bank 3: 133, Ts: 41, u: 5.38787, Tm: 30.16549
+
+Fan_Bank 4: 0, Ts: 0, u: -128.00000, Tm: 30.00000
+
+F1:0.00 F2:52.16 F3:52.16 F4:0.00
+\end{verbatim}
+The line $00,00,00,00,37,41,41,41,40,41,40,00,00,00,00,00,36,36,36,36$ can be interpreted as follows:
+%
+\begin{equation}
+ T_{00},T_{01},T_{02},T_{03},T_{10},T_{11},T_{12},T_{13},T_{20},T_{21},T_{22},T_{23},T_{30},T_{31},T_{32},T_{03},Td_0,Td_1,Td_2,Td_3
+\end{equation}
+%
+where $T_{ij}$ is the temperature of the $j^{th}$ hard drive in the $i^{th}$ fan bank and $Td_i$ is the desired temperature of the $i^{th}$ fan bank. Lines of the format 
+\begin{verbatim}
+Fan_Bank 2: 133, Ts: 41, u: 5.38787, Tm: 30.16549
+\end{verbatim}
+are formatted as follows:
+\begin{verbatim}
+Fan_Bank 2: PWM_Value, Ts: max(T), u: Control_Input, Tm: Model_Temperature
+\end{verbatim}
+%
+where $PWM\_Value$ is between $0-255$, $max(T)$ is the maximum temperature of the drives in the $ i^{th}$ fan bank, $Control\_Input$ is between $-128$ and $127$ and $ Model\_Temperature $ is the current desired temperature of the array.
+%
+The last line of the output,
+\begin{verbatim}
+F1:0.00 F2:52.16 F3:52.16 F4:0.00
+\end{verbatim}
+%
+is the duty cycle for each fan bank, $0-100$.
+
+\section{Hardware Installation}
+
+\textbf{It is recommended that the following procedure be completed without the system running}
+
+Install the fan controller with the provided hardware in a suitable location. Using the provided USB cable, connect the fan controller to an internal USB header. Be certain that you are attaching it to the correct header, and that all of the pins correspond to the pins on the fan controller PCB. Consult your system board's manual. Note, pin assignment for the USB cable are printed on the PCB. Attach the power and fans to the fan controller.
+
+\section{Testing that hardware configuration}
+
+When the system is powered on, the fans should begin spinning, if they do not, then there is a power issue, check your connections.
+
+Once installed and booted, open a terminal and execute the following command
+%
+\begin{verbatim}
+python HDD_Temp_Push.py
+\end{verbatim}
+%
+If all is working correctly, you should expect to see output similar to that in the \textbf{Testing your Configuration} section. If you get an error, such as
+%
+\begin{verbatim}
+USB1 Failed... Disabaling Serial Output
+\end{verbatim}
+%
+your USB cable is not connected correctly, please check your connections.
+
+\section{Final Installation}
+
+\subsection{Installing the software as a cron job}
+
+Add the following line to your crontab by executing 
+
+\begin{verbatim}
+crontab -e
+\end{verbatim}
+
+\begin{verbatim}
+ */5 * * * * /usr/local/MRAC/Fan_Watchdog.sh > /dev/null 2>&1
+\end{verbatim}
+
+It should be noted that this software should not be ran as root, but simply as a normal user. If a normal user can successfully run the python daemon, then install the cronjob to that user's crontab.
+
+\end{document}

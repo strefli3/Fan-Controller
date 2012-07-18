@@ -13,7 +13,7 @@ log = open("/tmp/MRAC.log",'w')
 hddt=hdd_temp()
 
 #Comms Parameters
-SEND_RATE = 5  # secs
+SEND_RATE = 1  # secs
 
 Td=[36,36,36,36]
 #Td=[30,30,30,30]
@@ -26,7 +26,7 @@ def init_ser():
 
 	S=0
 	try:
-	        x = serial.Serial('/dev/ttyUSB0',38400,timeout=.1)
+	        x = serial.Serial('/dev/ttyUSB0',19200,timeout=.1)
 		x.flushInput()
 	except:
 	        print "USB0 Failed... Trying USB1\n"
@@ -34,7 +34,7 @@ def init_ser():
 	
 	if S==1:
 	        try:
-	                x = serial.Serial('/dev/ttyUSB1',38400,timeout=.1)
+	                x = serial.Serial('/dev/ttyUSB1',19200,timeout=.1)
 			x.flushInput()
 	        except:
 	                print "USB1 Failed... Disabaling Serial Output\n"
@@ -53,8 +53,10 @@ while i:
  			print rx
 
 			
-		t=(math.sin(i*3.1415/360)+1)*40
+		t=(math.sin(i*3.1415/360)+1)*30
 		i+=1
+
+		t=80
 
 		#Temps=hddt.get_Temps()
 		Temps=[[t,t,t,t],[t,t,t,t],[t,t,t,t],[t,t,t,t]]
